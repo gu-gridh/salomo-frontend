@@ -19,7 +19,9 @@
             <v-sheet class="pa-5">Two</v-sheet>
             </v-tabs-window-item>
             <v-tabs-window-item value="three">
-            <v-sheet class="pa-5">Three</v-sheet>
+            <v-sheet class="pa-5">
+                <explore></explore>
+            </v-sheet>
             </v-tabs-window-item>
             <v-tabs-window-item value="four">
             <v-sheet class="pa-5">Four</v-sheet>
@@ -33,6 +35,7 @@
 
 
 <script setup>
+import Explore from '@/views/Explore.vue';
 import { ref } from 'vue'
 
 const tab = ref('one')
