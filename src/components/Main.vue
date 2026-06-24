@@ -44,13 +44,11 @@ function selectTab(value) {
 <style scoped>
 .tabs {
     display: flex;
-    border-bottom: 1px solid #d8dce3;
 }
 
 .tab {
     padding: 12px 18px;
     border: 0;
-    border-bottom: 2px solid transparent;
     background: transparent;
     color: #2a2f36;
     cursor: pointer;

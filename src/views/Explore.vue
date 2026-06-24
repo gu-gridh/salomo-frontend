@@ -4,12 +4,15 @@
             <ModelView />
         </section>
 
+        <AudioPlayer />
+
         <h1>Explore</h1>
         <p>This is the Explore page.</p>
     </div>
 </template>
 
 <script setup>
+import AudioPlayer from '@/components/AudioPlayer.vue'
 import ModelView from '@/components/ModelView.vue'
 </script>
 
