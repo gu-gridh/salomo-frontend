@@ -23,7 +23,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { sheetTimeline } from '@/sheetTimeline'
+import { sheetTimeline } from '@/settings/sheetTimeline'
 import { useTimingStore } from '@/stores/timing'
 
 const timing = useTimingStore()

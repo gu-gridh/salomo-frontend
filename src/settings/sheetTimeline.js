@@ -1,4 +1,4 @@
-//duration of each sheet section in seconds
+//Duration of each sheet section in seconds
 export const sheetTimeline = [
     { id: 1, duration: 4, image: '/sheet1.jpg' },
     { id: 2, duration: 5, image: '/sheet1.jpg' },

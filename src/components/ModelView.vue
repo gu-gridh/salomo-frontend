@@ -7,7 +7,7 @@ import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js'
-import { cameraPath } from '@/cameraPath'
+import { cameraPath } from '@/settings/cameraPath'
 import { useTimingStore } from '@/stores/timing'
 
 const container = ref(null)
