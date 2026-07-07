@@ -5,6 +5,7 @@
         </section>
 
         <AudioPlayer />
+        <SheetTimeline />
 
         <h1>Explore</h1>
         <p>This is the Explore page.</p>
@@ -14,6 +15,7 @@
 <script setup>
 import AudioPlayer from '@/components/AudioPlayer.vue'
 import ModelView from '@/components/ModelView.vue'
+import SheetTimeline from '@/components/SheetTimeline.vue'
 </script>
 
 <style scoped>

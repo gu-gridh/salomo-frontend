@@ -9,7 +9,7 @@
 </template>
 
 <script setup>
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import WaveSurfer from 'wavesurfer.js'
 import { useTimingStore } from '@/stores/timing'
 
@@ -24,6 +24,7 @@ const timing = useTimingStore()
 const duration = ref(0)
 const waveform = ref(null)
 let wavesurfer
+let unwatchTime
 
 function togglePlayback() {
     wavesurfer?.playPause()
@@ -66,9 +67,19 @@ onMounted(() => {
     wavesurfer.on('pause', () => {
         timing.isPlaying = false
     })
+
+    unwatchTime = watch(
+        () => timing.time,
+        (time) => {
+            if (!wavesurfer || Math.abs(wavesurfer.getCurrentTime() - time) < 0.2) return
+
+            wavesurfer.setTime(time)
+        }
+    )
 })
 
 onBeforeUnmount(() => {
+    unwatchTime?.()
     wavesurfer?.destroy()
 })
 </script>
