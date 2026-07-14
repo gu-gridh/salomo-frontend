@@ -59,8 +59,4 @@ function selectTab(value) {
     border-bottom-color: #1976d2;
     color: #1976d2;
 }
-
-.tab-panel {
-    padding: 20px;
-}
 </style>
