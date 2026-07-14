@@ -10,8 +10,6 @@ import IIIFViewer from '@/components/IIIFViewer.vue'
 
 <style scoped>
 .bottom-interface {
-    height: 50vh;
-    min-height: 320px;
-    margin-top: 24px;
+    height: 100%;
 }
 </style>

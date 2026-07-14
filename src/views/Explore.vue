@@ -1,15 +1,15 @@
 <template>
     <div class="explore-page">
         <div class="top-content">
-        <section class="model-section">
-            <ModelView />
-        </section>
+            <section class="model-section">
+                <ModelView />
+            </section>
 
-        <AudioPlayer />
-        <SheetTimeline />
+            <AudioPlayer />
+            <SheetTimeline />
         </div>
         <div class="bottom-content">
-        <BottomInterface />
+            <BottomInterface />
         </div>
     </div>
 </template>
@@ -23,16 +23,29 @@ import BottomInterface from '@/views/BottomInterface.vue'
 
 <style scoped>
 .explore-page {
-    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    height: 100%;
+    overflow: hidden;
 }
 
 .top-content {
-    padding: 0 32px;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+    padding: 0 32px 100px;
 }
 
 .model-section {
-    height: 33vh;
-    min-height: 220px;
+    flex: 1;
+    min-height: 0;
     margin-bottom: 24px;
+}
+
+.bottom-content {
+    flex: 1;
+    min-height: 0;
 }
 </style>

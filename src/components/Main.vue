@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="main-layout">
         <nav class="tabs">
             <button v-for="item in tabs" :key="item.value" class="tab"
                 :class="{ 'tab--active': activeTab === item.value }" type="button" @click="selectTab(item.value)">
@@ -42,8 +42,20 @@ function selectTab(value) {
 </script>
 
 <style scoped>
+.main-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
 .tabs {
     display: flex;
+    flex: none;
+}
+
+.tab-panel {
+    flex: 1;
+    min-height: 0;
 }
 
 .tab {
