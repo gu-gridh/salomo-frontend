@@ -35,7 +35,7 @@ import BottomInterface from '@/views/BottomInterface.vue'
     flex: 1;
     flex-direction: column;
     min-height: 0;
-    padding: 0 32px 100px;
+    padding: 0 32px;
 }
 
 .model-section {

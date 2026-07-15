@@ -1,20 +1,13 @@
 <template>
     <div class="sheet-timeline" aria-label="Music sheet timeline">
         <div class="sheet-timeline__track">
-            <div
-                v-for="sheet in sheetsWithStart"
-                :key="sheet.id"
-                class="sheet-timeline__item"
-                :style="{ flex: `${sheet.duration} 1 0` }"
-            >
-                <button
-                    type="button"
-                    class="sheet-timeline__sheet"
-                    @click="seekToSheet(sheet)"
-                ></button>
-                <span class="sheet-timeline__preview">
-                    <img class="sheet-timeline__preview-image" :src="sheet.image" :alt="`Sheet ${sheet.id}`">
-                </span>
+            <div v-for="sheet in sheetsWithStart" :key="sheet.id" class="sheet-timeline__item"
+                :style="{ flex: `${sheet.duration} 1 0` }" @mouseenter="hoveredSheet = sheet.id"
+                @mouseleave="hoveredSheet = null">
+                <button type="button" class="sheet-timeline__sheet" @click="seekToSheet(sheet)"
+                    @focus="hoveredSheet = sheet.id" @blur="hoveredSheet = null"></button>
+                <GeniePreview class="sheet-timeline__preview" :src="sheet.image" :alt="`Sheet ${sheet.id}`"
+                    :open="hoveredSheet === sheet.id" />
             </div>
             <div class="sheet-timeline__playhead" :style="{ left: `${progressPercent}%` }"></div>
         </div>
@@ -22,11 +15,13 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
+import GeniePreview from '@/components/effects/GeniePreview.vue'
 import { sheetTimeline } from '@/settings/sheetTimeline'
 import { useTimingStore } from '@/stores/timing'
 
 const timing = useTimingStore()
+const hoveredSheet = ref(null)
 const timelineDuration = computed(() => sheetTimeline.reduce((total, sheet) => total + sheet.duration, 0))
 const totalDuration = computed(() => timelineDuration.value || 1)
 const sheetsWithStart = computed(() => {
@@ -89,25 +84,13 @@ function seekToSheet(sheet) {
     position: absolute;
     top: 28px;
     left: 50%;
-    display: none;
     width: 180px;
     height: 90px;
     max-width: min(180px, 80vw);
-    overflow: hidden;
-    border: 1px solid #909090;
-    background: #ffffff;
+    overflow: visible;
     pointer-events: none;
     transform: translateX(-50%);
     z-index: 2;
-}
-
-.sheet-timeline__preview-image {
-    display: block;
-    width: 100%;
-}
-
-.sheet-timeline__item:hover .sheet-timeline__preview {
-    display: block;
 }
 
 .sheet-timeline__playhead {
