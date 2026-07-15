@@ -20,9 +20,11 @@
 <script setup>
 import Explore from '@/views/Explore.vue'
 import { ref } from 'vue'
+import { useTimingStore } from '@/stores/timing'
 
 const activeTab = ref('home')
 const exploreLoaded = ref(false)
+const timing = useTimingStore()
 
 const tabs = [
     { label: 'Home', value: 'home' },
@@ -34,6 +36,10 @@ const tabs = [
 
 function selectTab(value) {
     activeTab.value = value
+
+    if (value !== 'explore') {
+        timing.isPlaying = false
+    }
 
     if (value === 'explore') {
         exploreLoaded.value = true

@@ -25,6 +25,7 @@ const duration = ref(0)
 const waveform = ref(null)
 let wavesurfer
 let unwatchTime
+let unwatchPlayback
 
 function togglePlayback() {
     wavesurfer?.playPause()
@@ -76,10 +77,21 @@ onMounted(() => {
             wavesurfer.setTime(time)
         }
     )
+
+    unwatchPlayback = watch(
+        () => timing.isPlaying,
+        (isPlaying) => {
+            if (isPlaying === wavesurfer.isPlaying()) return
+
+            if (isPlaying) wavesurfer.play()
+            else wavesurfer.pause()
+        }
+    )
 })
 
 onBeforeUnmount(() => {
     unwatchTime?.()
+    unwatchPlayback?.()
     wavesurfer?.destroy()
 })
 </script>
