@@ -115,7 +115,6 @@ onBeforeUnmount(() => {
     display: flex;
     flex-direction: column;
     padding: 10px 14px;
-    background: rgb(255 255 255 / 85%);
     color: #2a2f36;
     pointer-events: none;
     z-index: 1;

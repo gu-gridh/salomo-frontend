@@ -1,8 +1,8 @@
 <template>
-    <nav class="viewer-mode-nav" aria-label="Viewer mode">
+    <nav class="viewer-mode-nav">
         <button v-for="item in items" :key="item.value" type="button" class="viewer-mode-nav__item"
             :class="{ 'viewer-mode-nav__item--active': modelValue === item.value }"
-            :aria-pressed="modelValue === item.value" @click="$emit('update:modelValue', item.value)">
+            @click="$emit('update:modelValue', item.value)">
             {{ item.label }}
         </button>
     </nav>
@@ -35,7 +35,7 @@ const items = [
     box-shadow: 0 0.1rem 1rem rgba(0, 0, 0, 0.5);
     transform: translateX(-50%);
     font-family: "Oswald", sans-serif;
-    font-size: 1.0em;
+    font-size: 1.1em;
     font-weight: 300;
     line-height: 1;
 }

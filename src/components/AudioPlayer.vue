@@ -105,13 +105,34 @@ onBeforeUnmount(() => {
 }
 
 .audio-player__button {
-    width: 72px;
-    padding: 8px 14px;
-    border: 1px solid #c8ced8;
-    background: #ffffff;
-    color: #2a2f36;
+    width: 104px;
+    padding: 14px 22px 15px;
+    border: 0;
+    border-radius: 8px;
+    background: #000000;
+    box-shadow: 0 0.1rem 1rem rgba(0, 0, 0, 0.5);
+    color: #ffffff;
     cursor: pointer;
-    font: inherit;
+    font-family: "Oswald", sans-serif;
+    font-size: 1.2em;
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: 0.5px;
+    transition: background-color 150ms ease, transform 150ms ease;
+}
+
+.audio-player__button:hover,
+.audio-player__button:focus-visible {
+    background: #171717;
+}
+
+.audio-player__button:hover {
+    transform: scale(1.05);
+}
+
+.audio-player__button:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
 }
 
 .audio-player__time {

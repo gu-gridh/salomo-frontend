@@ -1,5 +1,5 @@
 <template>
-    <div class="sheet-timeline" aria-label="Music sheet timeline">
+    <div class="sheet-timeline">
         <div class="sheet-timeline__track">
             <div v-for="sheet in sheetsWithStart" :key="sheet.id" class="sheet-timeline__item"
                 :style="{ flex: `${sheet.duration} 1 0` }" @mouseenter="hoveredSheet = sheet.id"
@@ -70,14 +70,14 @@ function seekToSheet(sheet) {
     display: block;
     width: 100%;
     height: 100%;
-    border: 2px solid #909090;
+    border: 2px solid #d0cfcf;
     background: #ffffff;
     cursor: pointer;
     padding: 0;
 }
 
 .sheet-timeline__sheet:hover {
-    border-color: #707070;
+    border-color: #9f9e9e;
 }
 
 .sheet-timeline__preview {

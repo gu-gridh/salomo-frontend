@@ -3,7 +3,7 @@
         'genie-preview--visible': visible,
         'genie-preview--settled': settledOpen,
     }">
-        <canvas ref="canvas" aria-hidden="true"></canvas>
+        <canvas ref="canvas"></canvas>
         <img :src="src" :alt="alt" :class="{ 'genie-preview__image--visible': settledOpen }">
     </span>
 </template>
@@ -119,11 +119,11 @@ onBeforeUnmount(() => cancelAnimationFrame(frame))
 
 .genie-preview--visible {
     visibility: visible;
+    filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.35));
 }
 
 .genie-preview--settled {
     background: #ffffff;
-    outline: 1px solid #909090;
 }
 
 canvas,
