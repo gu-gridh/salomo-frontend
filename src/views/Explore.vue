@@ -31,10 +31,13 @@ import BottomInterface from '@/views/BottomInterface.vue'
 }
 
 .top-content {
+    position: relative;
+    z-index: 2;
     display: flex;
     flex: 1;
     flex-direction: column;
     min-height: 0;
+    overflow: visible;
     padding: 0 32px;
 }
 
@@ -45,6 +48,8 @@ import BottomInterface from '@/views/BottomInterface.vue'
 }
 
 .bottom-content {
+    position: relative;
+    z-index: 1;
     flex: 1;
     min-height: 0;
 }
