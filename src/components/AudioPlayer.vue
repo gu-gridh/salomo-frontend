@@ -44,7 +44,7 @@ onMounted(() => {
         url: props.src,
         height: 96,
         waveColor: '#d8dce3',
-        progressColor: '#1976d2',
+        progressColor: '#ffa600',
         cursorColor: '#2a2f36',
         dragToSeek: true,
     })
