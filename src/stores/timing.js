@@ -1,19 +1,35 @@
 import { defineStore } from 'pinia'
-import { sheetTimeline } from '@/settings/sheetTimeline'
+import { pages, timeline, totalDuration } from '@/settings/timeline'
 
 export const useTimingStore = defineStore('timing', {
     state: () => ({
         time: 0.0,
         isPlaying: false,
+        seekVersion: 0, //bumped on every explicit seek so the audio engine can reposition
     }),
     getters: {
-        currentSheet: (state) => {
-            let endTime = 0
+        totalDuration: () => totalDuration,
+        currentSonata: (state) =>
+            timeline.find((sonata) => state.time < sonata.offset + sonata.duration) ?? timeline.at(-1),
+        currentPage: (state) => {
+            let current = pages[0]
 
-            return sheetTimeline.find((sheet) => {
-                endTime += sheet.duration
-                return state.time < endTime
-            }) ?? sheetTimeline.at(-1)
+            for (const page of pages) {
+                if (page.start > state.time) break
+                current = page
+            }
+
+            return current
+        },
+    },
+    actions: {
+        //Single entry point for jumping the whole app (audio, pawn, sheet, waveform) to a time.
+        seek(time) {
+            this.time = Math.min(Math.max(time, 0), totalDuration)
+            this.seekVersion++
+        },
+        seekToPage(page) {
+            this.seek(page.start)
         },
     },
 })

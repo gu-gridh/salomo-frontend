@@ -5,10 +5,12 @@
 </template>
 
 <script setup>
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import OpenSeadragon from 'openseadragon'
+import { useTimingStore } from '@/stores/timing'
 
 const viewerElement = ref(null)
+const timing = useTimingStore()
 let viewer
 
 onMounted(() => {
@@ -16,11 +18,19 @@ onMounted(() => {
         element: viewerElement.value,
         tileSources: {
             type: 'image',
-            url: `${import.meta.env.BASE_URL}sheet1.jpg`,
+            url: timing.currentPage.image,
         },
         showNavigationControl: false,
     })
 })
+
+//turn the displayed sheet-music page whenever the timeline reaches the next one
+watch(
+    () => timing.currentPage.image,
+    (image) => {
+        viewer?.open({ type: 'image', url: image })
+    }
+)
 
 onBeforeUnmount(() => {
     viewer?.destroy()

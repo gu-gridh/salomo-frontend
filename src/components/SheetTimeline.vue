@@ -1,15 +1,20 @@
 <template>
     <div class="sheet-timeline">
         <div class="sheet-timeline__track">
-            <div v-for="sheet in sheetsWithStart" :key="sheet.id" class="sheet-timeline__item"
-                :style="{ flex: `${sheet.duration} 1 0` }" @mouseenter="hoveredSheet = sheet.id"
-                @mouseleave="hoveredSheet = null">
-                <button type="button" class="sheet-timeline__sheet" @click="seekToSheet(sheet)"
-                    @focus="hoveredSheet = sheet.id" @blur="hoveredSheet = null"></button>
-                <GeniePreview class="sheet-timeline__preview" :src="sheet.image" :alt="`Sheet ${sheet.id}`"
-                    :open="hoveredSheet === sheet.id" />
+            <div v-for="page in pages" :key="page.snapIndex" class="sheet-timeline__item" :class="{
+                'sheet-timeline__item--sonata-start': page.pageInSonata === 1 && page.snapIndex !== 0,
+            }" :style="{ flex: `${page.duration} 1 0` }" @mouseenter="hoveredPage = page.snapIndex"
+                @mouseleave="hoveredPage = null">
+                <button type="button" class="sheet-timeline__sheet" :class="{
+                    'sheet-timeline__sheet--active': timing.currentPage.snapIndex === page.snapIndex,
+                    'sheet-timeline__sheet--silent': page.silent,
+                }" :title="`${page.sonataTitle} – page ${page.pageInSonata}`" @click="timing.seekToPage(page)"
+                    @focus="hoveredPage = page.snapIndex" @blur="hoveredPage = null"></button>
+                <div v-if="timing.currentPage.snapIndex === page.snapIndex" class="sheet-timeline__playhead"
+                    :style="{ left: `${pageProgressPercent}%` }"></div>
+                <GeniePreview class="sheet-timeline__preview" :src="page.image"
+                    :alt="`${page.sonataTitle} page ${page.pageInSonata}`" :open="hoveredPage === page.snapIndex" />
             </div>
-            <div class="sheet-timeline__playhead" :style="{ left: `${progressPercent}%` }"></div>
         </div>
     </div>
 </template>
@@ -17,32 +22,19 @@
 <script setup>
 import { computed, ref } from 'vue'
 import GeniePreview from '@/components/effects/GeniePreview.vue'
-import { sheetTimeline } from '@/settings/sheetTimeline'
+import { pages } from '@/settings/timeline'
 import { useTimingStore } from '@/stores/timing'
 
 const timing = useTimingStore()
-const hoveredSheet = ref(null)
-const timelineDuration = computed(() => sheetTimeline.reduce((total, sheet) => total + sheet.duration, 0))
-const totalDuration = computed(() => timelineDuration.value || 1)
-const sheetsWithStart = computed(() => {
-    let start = 0
+const hoveredPage = ref(null)
 
-    return sheetTimeline.map((sheet) => {
-        const sheetWithStart = { ...sheet, start }
-        start += sheet.duration
+//playhead position within the currently active page (exact despite flex gaps)
+const pageProgressPercent = computed(() => {
+    const page = timing.currentPage
+    const ratio = (timing.time - page.start) / page.duration
 
-        return sheetWithStart
-    })
+    return Math.min(Math.max(ratio, 0), 1) * 100
 })
-const progressPercent = computed(() => {
-    const currentTime = Math.min(Math.max(timing.time, 0), totalDuration.value)
-
-    return (currentTime / totalDuration.value) * 100
-})
-
-function seekToSheet(sheet) {
-    timing.time = sheet.start
-}
 </script>
 
 <style scoped>
@@ -62,8 +54,12 @@ function seekToSheet(sheet) {
 
 .sheet-timeline__item {
     position: relative;
-    min-width: 12px;
+    min-width: 6px;
     height: 100%;
+}
+
+.sheet-timeline__item--sonata-start {
+    margin-left: 8px;
 }
 
 .sheet-timeline__sheet {
@@ -78,6 +74,16 @@ function seekToSheet(sheet) {
 
 .sheet-timeline__sheet:hover {
     border-color: #9f9e9e;
+}
+
+.sheet-timeline__sheet--active {
+    border-color: #ffa600;
+    background: #fff3dd;
+}
+
+.sheet-timeline__sheet--silent {
+    border-style: dashed;
+    background: #f6f6f6;
 }
 
 .sheet-timeline__preview {
@@ -97,7 +103,7 @@ function seekToSheet(sheet) {
     position: absolute;
     top: 0;
     bottom: 0;
-    width: 14px;
+    width: 4px;
     background: #ffa600;
     pointer-events: none;
     transform: translateX(-50%);

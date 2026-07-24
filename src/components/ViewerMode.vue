@@ -25,15 +25,14 @@ const items = [
 <style scoped>
 .viewer-mode-nav {
     position: absolute;
-    top: 28px;
-    left: 50%;
+    top: 16px;
+    right: 24px;
     z-index: 10;
     display: flex;
     padding: 0 6px;
     border-radius: 8px;
     background: #000000;
     box-shadow: 0 0.1rem 1rem rgba(0, 0, 0, 0.5);
-    transform: translateX(-50%);
     font-family: "Oswald", sans-serif;
     font-size: 1.1em;
     font-weight: 300;
