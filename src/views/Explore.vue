@@ -1,70 +1,56 @@
 <template>
-  <div class="test-environment">
-    <h1>Audio & Grid Sync Test Node</h1>
-    
-    <AudioPlayer 
-      :audioUrl="audioTrack" 
-      :currentTime="sharedTime"
-      @position-changed="handleAudioRelease"
-      @time-updated="handleTimeTicker"
-      @duration-loaded="handleDuration"
-    />
+    <div class="explore-page">
+        <div class="top-content">
+            <section class="model-section">
+                <ModelView />
+            </section>
 
-    <SquareGrid 
-      :currentTime="sharedTime" 
-      :duration="totalDuration"
-      @square-clicked="handleGridJump"
-    />
-  </div>
+            <AudioPlayer />
+            <SheetTimeline />
+        </div>
+        <div class="bottom-content">
+            <BottomInterface />
+        </div>
+    </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import AudioPlayer from '@/components/AudioPlayer.vue';
-import SquareGrid from '@/components/SquareGrid.vue';
-
-// Dummy track or real backend URL/Blob cache
-const audioTrack = ref('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');
-
-const sharedTime = ref(0);
-const totalDuration = ref(100); // Sensible fallback until audio file mounts
-
-// 1. Triggered continuous-style as audio naturally plays forward
-const handleTimeTicker = (time) => {
-  sharedTime.value = time;
-};
-
-// 2. Triggered when audio metadata arrives
-const handleDuration = (duration) => {
-  totalDuration.value = duration;
-};
-
-// 3. Catches the slider drag-release event -> alerts the grid
-const handleAudioRelease = (releasedTime) => {
-  sharedTime.value = releasedTime;
-  console.log(`Audio slider released at: ${releasedTime}s. Syncing grid.`);
-};
-
-// 4. Catches grid box clicks -> forces audio framework to seek to target spot
-const handleGridJump = (calculatedTime) => {
-  sharedTime.value = calculatedTime;
-  console.log(`Grid clicked. Snapping audio timeline to: ${calculatedTime}s.`);
-};
+import AudioPlayer from '@/components/AudioPlayer.vue'
+import ModelView from '@/components/ModelView.vue'
+import SheetTimeline from '@/components/SheetTimeline.vue'
+import BottomInterface from '@/views/BottomInterface.vue'
 </script>
 
-<style>
-.test-environment {
-  max-width: 600px;
-  margin: 40px auto;
-  padding: 20px;
-  background: #1e1e1e;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+<style scoped>
+.explore-page {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    height: 100%;
+    overflow: hidden;
 }
-h1 {
-  color: #fff;
-  font-family: sans-serif;
-  font-size: 1.5rem;
-  margin-bottom: 20px;
+
+.top-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+    overflow: visible;
+    padding: 0 32px;
+}
+
+.model-section {
+    flex: 1;
+    min-height: 0;
+    margin-bottom: 24px;
+}
+
+.bottom-content {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    min-height: 0;
 }
 </style>

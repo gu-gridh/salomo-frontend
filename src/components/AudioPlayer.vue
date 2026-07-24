@@ -1,152 +1,147 @@
 <template>
-  <div class="audio-player">
-    <button @click="togglePlay" class="play-btn">
-      {{ isPlaying ? 'Pause' : 'Play' }}
-    </button>
-
-    <span class="time">{{ formatTime(currentTime) }}</span>
-
-    <input
-      type="range"
-      min="0"
-      :max="duration || 100"
-      :value="currentTime"
-      @input="onSliderDrag"
-      @change="onSliderRelease"
-      class="slider"
-    />
-
-    <span class="time">{{ formatTime(duration) }}</span>
-  </div>
+    <div class="audio-player">
+        <button type="button" class="audio-player__button" @click="togglePlayback">
+            {{ timing.isPlaying ? 'Pause' : 'Play' }}
+        </button>
+        <span class="audio-player__time">{{ formatTime(timing.time) }} / {{ formatTime(duration) }}</span>
+        <div ref="waveform" class="audio-player__waveform"></div>
+    </div>
 </template>
 
 <script setup>
-import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import WaveSurfer from 'wavesurfer.js'
+import { useTimingStore } from '@/stores/timing'
 
 const props = defineProps({
-  audioUrl: {
-    type: String,
-    required: true,
-  },
-  // 1. RECEIVE CURRENT TIME FROM PARENT
-  currentTime: {
-    type: Number,
-    default: 0
-  }
-});
+    src: {
+        type: String,
+        default: '/chopin.mp3',
+    },
+})
 
-// 2. ADD 'time-updated' TO EMITS
-const emit = defineEmits(['position-changed', 'playing-state', 'duration-loaded', 'time-updated']);
+const timing = useTimingStore()
+const duration = ref(0)
+const waveform = ref(null)
+let wavesurfer
+let unwatchTime
+let unwatchPlayback
 
-const audio = new Audio();
-const isPlaying = ref(false);
-const currentTime = ref(0);
-const duration = ref(0);
-let isDragging = false;
+function togglePlayback() {
+    wavesurfer?.playPause()
+}
 
-const formatTime = (seconds) => {
-  if (isNaN(seconds)) return '00:00';
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-};
+function formatTime(seconds) {
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = Math.floor(seconds % 60).toString().padStart(2, '0')
 
-// 3. WATCH FOR GRID CLICKS FROM PARENT
-// When parent says the time changed (grid click), force native player to jump
-watch(() => props.currentTime, (newTime) => {
-  if (!isDragging && Math.abs(audio.currentTime - newTime) > 0.5) {
-    audio.currentTime = newTime;
-    currentTime.value = newTime;
-  }
-});
-
-const setupAudioListeners = () => {
-  audio.addEventListener('loadedmetadata', () => {
-    duration.value = audio.duration;
-    emit('duration-loaded', audio.duration);
-  });
-
-  audio.addEventListener('timeupdate', () => {
-    if (!isDragging) {
-      currentTime.value = audio.currentTime;
-      // 4. EMIT LIVE TICK TO PARENT (Moves the cyan box)
-      emit('time-updated', audio.currentTime);
-    }
-  });
-
-  audio.addEventListener('ended', () => {
-    isPlaying.value = false;
-    currentTime.value = 0;
-    emit('playing-state', false);
-    emit('time-updated', 0);
-  });
-};
-
-const togglePlay = () => {
-  if (isPlaying.value) {
-    audio.pause();
-    isPlaying.value = false;
-  } else {
-    audio.play().catch(err => console.error("Playback blocked:", err));
-    isPlaying.value = true;
-  }
-  emit('playing-state', isPlaying.value);
-};
-
-const onSliderDrag = (event) => {
-  isDragging = true;
-  currentTime.value = parseFloat(event.target.value);
-};
-
-const onSliderRelease = (event) => {
-  const targetTime = parseFloat(event.target.value);
-  audio.currentTime = targetTime;
-  isDragging = false;
-  emit('position-changed', targetTime);
-};
-
-watch(() => props.audioUrl, (newUrl) => {
-  if (!newUrl) return;
-  const wasPlaying = isPlaying.value;
-  audio.src = newUrl;
-  audio.load();
-  if (wasPlaying) {
-    audio.play().catch(err => console.error("Auto-play failed:", err));
-  } else {
-    currentTime.value = 0;
-  }
-});
+    return `${minutes}:${remainingSeconds}`
+}
 
 onMounted(() => {
-  setupAudioListeners();
-  if (props.audioUrl) {
-    audio.src = props.audioUrl;
-  }
-});
+    wavesurfer = WaveSurfer.create({
+        container: waveform.value,
+        url: props.src,
+        height: 96,
+        waveColor: '#d8dce3',
+        progressColor: '#ffa600',
+        cursorColor: '#2a2f36',
+        dragToSeek: true,
+    })
+
+    wavesurfer.on('interaction', () => {
+        wavesurfer.play()
+    })
+
+    wavesurfer.on('timeupdate', (time) => {
+        timing.time = time
+    })
+
+    wavesurfer.on('ready', (audioDuration) => {
+        duration.value = audioDuration
+    })
+
+    wavesurfer.on('play', () => {
+        timing.isPlaying = true
+    })
+
+    wavesurfer.on('pause', () => {
+        timing.isPlaying = false
+    })
+
+    unwatchTime = watch(
+        () => timing.time,
+        (time) => {
+            if (!wavesurfer || Math.abs(wavesurfer.getCurrentTime() - time) < 0.2) return
+
+            wavesurfer.setTime(time)
+        }
+    )
+
+    unwatchPlayback = watch(
+        () => timing.isPlaying,
+        (isPlaying) => {
+            if (isPlaying === wavesurfer.isPlaying()) return
+
+            if (isPlaying) wavesurfer.play()
+            else wavesurfer.pause()
+        }
+    )
+})
 
 onBeforeUnmount(() => {
-  audio.pause();
-  audio.src = '';
-  audio.load();
-});
+    unwatchTime?.()
+    unwatchPlayback?.()
+    wavesurfer?.destroy()
+})
 </script>
 
 <style scoped>
 .audio-player {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-family: sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
 }
-.play-btn {
-  padding: 8px 16px;
-  cursor: pointer;
+
+.audio-player__button {
+    width: 104px;
+    padding: 14px 22px 15px;
+    border: 0;
+    border-radius: 8px;
+    background: #000000;
+    box-shadow: 0 0.1rem 1rem rgba(0, 0, 0, 0.5);
+    color: #ffffff;
+    cursor: pointer;
+    font-family: "Oswald", sans-serif;
+    font-size: 1.2em;
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: 0.5px;
+    transition: background-color 150ms ease, transform 150ms ease;
 }
-.slider {
-  flex-grow: 1;
-  cursor: pointer;
+
+.audio-player__button:hover,
+.audio-player__button:focus-visible {
+    background: #171717;
 }
-.time {
-  font-variant-numeric: tabular-nums; /* Prevents text shifting as numbers change */
+
+.audio-player__button:hover {
+    transform: scale(1.05);
+}
+
+.audio-player__button:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+}
+
+.audio-player__time {
+    width: 88px;
+    color: #2a2f36;
+    font-variant-numeric: tabular-nums;
+}
+
+.audio-player__waveform {
+    flex: 1;
 }
 </style>

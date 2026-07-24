@@ -9,14 +9,17 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "openseadragon": "^6.0.2",
     "pinia": "^3.0.4",
+    "three": "^0.184.0",
     "vue": "^3.5.32",
     "vue-router": "^5.0.4",
-    "vuetify": "^4.0.7"
+    "vuetify": "^4.0.7",
+    "wavesurfer.js": "^7.12.8"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.6",
-    "vite": "^8.0.8",
+    "vite": "^8.1.0",
     "vite-plugin-vue-devtools": "^8.1.1"
   },
   "engines": {
