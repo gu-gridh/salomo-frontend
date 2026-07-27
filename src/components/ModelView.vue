@@ -11,6 +11,9 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js'
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
 import { pages } from '@/settings/timeline'
 import { useTimingStore } from '@/stores/timing'
 
@@ -39,6 +42,12 @@ onMounted(() => {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     renderer.setSize(clientWidth, clientHeight)
     container.value.appendChild(renderer.domElement)
+
+    const composer = new EffectComposer(renderer)
+    composer.addPass(new RenderPass(scene, camera))
+    composer.addPass(
+        new UnrealBloomPass(new THREE.Vector2(clientWidth, clientHeight), 0.8, 0.4, 1)
+    )
 
     //Restricted orbit: stay on the open (cutaway) side of the temple, but allow
     //swinging far enough toward +x to glimpse the facade with the pillars.
@@ -108,6 +117,10 @@ onMounted(() => {
         return raycaster.intersectObject(pawn, true).length > 0
     }
 
+    function setPawnGlow(glowing) {
+        if (pawnMaterial) pawnMaterial.emissiveIntensity = glowing ? 1.7 : 0
+    }
+
     function nearestSnapToRay() {
         let best = 0
         let bestDistance = Infinity
@@ -131,7 +144,7 @@ onMounted(() => {
         event.stopPropagation()
         dragIndex.value = timing.currentPage.snapIndex
         container.value.setPointerCapture(event.pointerId)
-        pawnMaterial?.emissive?.set('#7a2a10')
+        setPawnGlow(true)
     }
 
     function onPointerMove(event) {
@@ -139,8 +152,14 @@ onMounted(() => {
             setPointerFromEvent(event)
             dragIndex.value = nearestSnapToRay()
         } else {
-            renderer.domElement.style.cursor = pawnHit(event) ? 'grab' : ''
+            const hovered = pawnHit(event)
+            renderer.domElement.style.cursor = hovered ? 'grab' : ''
+            setPawnGlow(hovered)
         }
+    }
+
+    function onPointerLeave() {
+        if (dragIndex.value == null) setPawnGlow(false)
     }
 
     function onPointerUp(event) {
@@ -149,12 +168,13 @@ onMounted(() => {
         //release: synchronize everything (audio included) to the chosen snap
         timing.seekToPage(pages[dragIndex.value])
         dragIndex.value = null
-        pawnMaterial?.emissive?.set('#000000')
+        setPawnGlow(true)
         container.value?.releasePointerCapture(event.pointerId)
     }
 
     container.value.addEventListener('pointerdown', onPointerDown, true)
     container.value.addEventListener('pointermove', onPointerMove)
+    container.value.addEventListener('pointerleave', onPointerLeave)
     container.value.addEventListener('pointerup', onPointerUp)
     container.value.addEventListener('pointercancel', onPointerUp)
     container.value.addEventListener('wheel', onWheel, { passive: false })
@@ -199,7 +219,12 @@ onMounted(() => {
 
             if (pawn) {
                 pawnMaterial = pawn.material?.clone?.() ?? null
-                if (pawnMaterial) pawn.material = pawnMaterial
+                if (pawnMaterial) {
+                    pawn.material = pawnMaterial
+                    pawnMaterial.color?.set('#fc783a')
+                    pawnMaterial.emissive?.set('#fc783a')
+                    pawnMaterial.emissiveIntensity = 0
+                }
 
                 snapWorld.forEach((world, i) => {
                     snapLocal[i] = pawn.parent.worldToLocal(world.clone())
@@ -223,7 +248,7 @@ onMounted(() => {
             if (target) pawn.position.lerp(target, Math.min(1, dt * 10))
         }
 
-        renderer.render(scene, camera)
+        composer.render()
         rafId = requestAnimationFrame(animate)
     }
 
@@ -237,6 +262,7 @@ onMounted(() => {
         camera.aspect = width / height
         camera.updateProjectionMatrix()
         renderer.setSize(width, height)
+        composer.setSize(width, height)
     })
     resizeObserver.observe(container.value)
 
@@ -245,6 +271,7 @@ onMounted(() => {
         resizeObserver?.disconnect()
         container.value?.removeEventListener('pointerdown', onPointerDown, true)
         container.value?.removeEventListener('pointermove', onPointerMove)
+        container.value?.removeEventListener('pointerleave', onPointerLeave)
         container.value?.removeEventListener('pointerup', onPointerUp)
         container.value?.removeEventListener('pointercancel', onPointerUp)
         container.value?.removeEventListener('wheel', onWheel)
