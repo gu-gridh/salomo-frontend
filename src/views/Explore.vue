@@ -84,7 +84,7 @@ function startResize(event) {
 
 .top-content {
     position: relative;
-    z-index: 2;
+    z-index: 4;
     display: flex;
     flex: 1 1 0;
     flex-direction: column;
