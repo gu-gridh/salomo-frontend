@@ -173,6 +173,7 @@ onMounted(() => {
 
             //fitting the model to the center of the scene
             model.position.sub(sphere.center)
+            model.position.y += sphere.radius * 0.2
             camera.position.set(sphere.radius * 0.1, sphere.radius * 0.12, sphere.radius * 1.05)
             camera.near = Math.max(sphere.radius / 100, 0.1)
             camera.far = sphere.radius * 10
