@@ -26,12 +26,13 @@ const items = [
 .viewer-mode-nav {
     position: absolute;
     top: 16px;
-    right: 24px;
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 10;
     display: flex;
     padding: 0 6px;
     border-radius: 8px;
-    background: #000000;
+    background: rgb(0 0 0 / 80%);
     box-shadow: 0 0.1rem 1rem rgba(0, 0, 0, 0.5);
     font-family: "Oswald", sans-serif;
     font-size: 1.1em;

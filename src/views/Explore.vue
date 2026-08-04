@@ -12,14 +12,10 @@
         <div class="split-divider" title="Drag to resize · double-click to reset" @pointerdown="startResize"
             @dblclick="resetSplit">
             <span class="split-divider__grip"></span>
-            <button v-if="splitRatio !== DEFAULT_SPLIT" type="button" class="split-divider__reset"
-                title="Reset to the standard split" @pointerdown.stop @click="resetSplit">
-                Reset
-            </button>
         </div>
 
         <div class="bottom-content" :style="{ flexGrow: 1 - splitRatio }">
-            <BottomInterface />
+            <BottomInterface :show-reset="splitRatio !== DEFAULT_SPLIT" @reset="resetSplit" />
         </div>
     </div>
 </template>
@@ -128,25 +124,6 @@ function startResize(event) {
     border-radius: 3px;
     background: #d0cfcf;
     transition: background-color 150ms ease;
-}
-
-.split-divider__reset {
-    position: absolute;
-    right: 32px;
-    padding: 3px 12px 4px;
-    border: 0;
-    border-radius: 8px;
-    background: #000000;
-    color: #ffffff;
-    cursor: pointer;
-    font-family: "Oswald", sans-serif;
-    font-size: 0.8em;
-    font-weight: 300;
-    letter-spacing: 0.5px;
-}
-
-.split-divider__reset:hover {
-    background: #171717;
 }
 
 .bottom-content {
