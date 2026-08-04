@@ -1,13 +1,9 @@
 <template>
-    <div ref="container" class="model-view">
-        <div v-if="labelPage" class="model-view__sheet-label">
-            <strong>{{ labelPage.sonataTitle }}</strong>
-        </div>
-    </div>
+    <div ref="container" class="model-view"></div>
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js'
@@ -20,9 +16,6 @@ import { useTimingStore } from '@/stores/timing'
 const container = ref(null)
 const timing = useTimingStore()
 const dragIndex = ref(null)
-
-//while dragging, the label previews the page the pawn hovers over
-const labelPage = computed(() => (dragIndex.value != null ? pages[dragIndex.value] : timing.currentPage))
 
 const modelUrl = '/salomos_temple_5.fbx'
 
@@ -290,18 +283,6 @@ onMounted(() => {
     min-height: 220px;
     overflow: hidden;
     background: #ffffff;
-}
-
-.model-view__sheet-label {
-    position: absolute;
-    top: 16px;
-    left: 16px;
-    display: flex;
-    flex-direction: column;
-    padding: 10px 14px;
-    color: #2a2f36;
-    pointer-events: none;
-    z-index: 1;
 }
 
 .model-view :deep(canvas) {
