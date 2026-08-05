@@ -8,17 +8,24 @@
         </nav>
 
         <main class="tab-panel">
-            <section v-show="activeTab === 'home'"></section>
-            <section v-show="activeTab === 'intro'"></section>
+            <Home v-show="activeTab === 'home'" />
+            <Introduction v-show="activeTab === 'intro'" />
             <Explore v-if="exploreLoaded" v-show="activeTab === 'explore'" />
-            <section v-show="activeTab === 'summary'"></section>
-            <section v-show="activeTab === 'bibliography'"></section>
+            <Summary v-show="activeTab === 'summary'" />
+            <Bibliography v-show="activeTab === 'bibliography'" />
         </main>
+
+        <Footer v-if="activeTab !== 'explore'" />
     </div>
 </template>
 
 <script setup>
+import Footer from '@/components/Footer.vue'
+import Bibliography from '@/views/Bibliography.vue'
 import Explore from '@/views/Explore.vue'
+import Home from '@/views/Home.vue'
+import Introduction from '@/views/Introduction.vue'
+import Summary from '@/views/Summary.vue'
 import { ref } from 'vue'
 import { useTimingStore } from '@/stores/timing'
 
@@ -63,6 +70,7 @@ function selectTab(value) {
 .tab-panel {
     flex: 1;
     min-height: 0;
+    overflow: auto;
 }
 
 .tab {
@@ -72,8 +80,8 @@ function selectTab(value) {
     color: #2a2f36;
     cursor: pointer;
     font: inherit;
-    font-weight: 400;
-    font-size: 1.4em;
+    font-weight: 300;
+    font-size: 1.5em;
 }
 
 .tab--active {
