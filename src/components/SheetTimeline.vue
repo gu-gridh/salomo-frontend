@@ -109,4 +109,19 @@ const pageProgressPercent = computed(() => {
     transform: translateX(-50%);
     z-index: 1;
 }
+
+@media (max-width: 1024px) {
+    .sheet-timeline {
+        overflow-x: auto;
+        padding-bottom: 8px;
+    }
+
+    .sheet-timeline__track {
+        min-width: 640px;
+    }
+
+    .sheet-timeline__preview {
+        display: none;
+    }
+}
 </style>

@@ -35,7 +35,7 @@ const items = [
     background: rgb(0 0 0 / 80%);
     box-shadow: 0 0.1rem 1rem rgba(0, 0, 0, 0.5);
     font-family: "Oswald", sans-serif;
-    font-size: 1.1em;
+    font-size: 0.9em;
     font-weight: 300;
     line-height: 1;
 }
@@ -47,7 +47,6 @@ const items = [
     background: transparent;
     color: #a7a7a7;
     font: inherit;
-    letter-spacing: 0.5px;
     white-space: nowrap;
 }
 

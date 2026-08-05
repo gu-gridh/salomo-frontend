@@ -132,4 +132,39 @@ function startResize(event) {
     flex: 1 1 0;
     min-height: 0;
 }
+
+@media (max-width: 1024px) {
+    .explore-page {
+        height: 100%;
+        min-height: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    .top-content {
+        display: grid;
+        grid-template-rows: minmax(240px, 1fr) auto auto;
+        gap: 16px;
+        flex: 1 0 45% !important;
+        min-height: 470px;
+        padding: 0 12px;
+    }
+
+    .model-section {
+        min-height: 240px;
+        height: auto;
+        margin-bottom: 0;
+    }
+
+    .split-divider {
+        display: none;
+    }
+
+    .bottom-content {
+        flex: 1 0 55% !important;
+        height: auto;
+        min-height: 360px;
+        margin-top: 20px;
+    }
+}
 </style>

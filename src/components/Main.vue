@@ -88,4 +88,18 @@ function selectTab(value) {
     background: #ffa600;
     color: #ffffff;
 }
+
+@media (max-width: 1024px) {
+    .tabs {
+        width: 100%;
+        padding: 0 0 8px;
+    }
+
+    .tab {
+        flex: 1 1 0;
+        min-width: 0;
+        padding: 10px 4px;
+        font-size: clamp(0.8rem, 4vw, 1.25rem);
+    }
+}
 </style>

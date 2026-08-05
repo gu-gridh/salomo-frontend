@@ -387,4 +387,27 @@ function formatTime(seconds) {
     cursor: pointer;
     touch-action: none;
 }
+
+@media (max-width: 1024px) {
+    .audio-player {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 10px 12px;
+    }
+
+    .audio-player__button {
+        width: 88px;
+        padding: 12px 16px 13px;
+    }
+
+    .audio-player__meta {
+        width: auto;
+        min-width: 0;
+    }
+
+    .audio-player__waveform {
+        grid-column: 1 / -1;
+        width: 100%;
+    }
+}
 </style>
