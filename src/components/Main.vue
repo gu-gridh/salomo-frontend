@@ -8,11 +8,11 @@
         </nav>
 
         <main class="tab-panel">
-            <section v-show="activeTab === 'home'">Home</section>
-            <section v-show="activeTab === 'intro'">Introduction</section>
+            <section v-show="activeTab === 'home'"></section>
+            <section v-show="activeTab === 'intro'"></section>
             <Explore v-if="exploreLoaded" v-show="activeTab === 'explore'" />
-            <section v-show="activeTab === 'summary'">Summary</section>
-            <section v-show="activeTab === 'bibliography'">Bibliography</section>
+            <section v-show="activeTab === 'summary'"></section>
+            <section v-show="activeTab === 'bibliography'"></section>
         </main>
     </div>
 </template>
@@ -57,6 +57,7 @@ function selectTab(value) {
 .tabs {
     display: flex;
     flex: none;
+    padding: 0 0 10px 40px
 }
 
 .tab-panel {
@@ -71,10 +72,12 @@ function selectTab(value) {
     color: #2a2f36;
     cursor: pointer;
     font: inherit;
+    font-weight: 400;
+    font-size: 1.4em;
 }
 
 .tab--active {
-    border-bottom-color: #1976d2;
-    color: #1976d2;
+    background: #ffa600;
+    color: #ffffff;
 }
 </style>
