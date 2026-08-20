@@ -5,7 +5,7 @@
             title="Reset to the standard split" @click="$emit('reset')">
             Reset
         </button>
-        <IIIFViewer v-if="activeMode !== 'comment'" />
+        <ImageViewer v-if="activeMode !== 'comment'" />
         <CommentView v-else />
     </section>
 </template>
@@ -13,7 +13,7 @@
 <script setup>
 import { ref } from 'vue'
 import CommentView from '@/components/CommentView.vue'
-import IIIFViewer from '@/components/IIIFViewer.vue'
+import ImageViewer from '@/components/ImageViewer.vue'
 import ViewerMode from '@/components/ViewerMode.vue'
 
 defineProps({
