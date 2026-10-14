@@ -3,7 +3,7 @@
         <div class="sheet-timeline__track">
             <div v-for="page in pages" :key="page.snapIndex" class="sheet-timeline__item" :class="{
                 'sheet-timeline__item--sonata-start': page.pageInSonata === 1 && page.snapIndex !== 0,
-            }" :style="{ flex: `${page.duration} 1 0` }" @mouseenter="hoveredPage = page.snapIndex"
+            }" @mouseenter="hoveredPage = page.snapIndex"
                 @mouseleave="hoveredPage = null">
                 <button type="button" class="sheet-timeline__sheet" :class="{
                     'sheet-timeline__sheet--active': timing.currentPage.snapIndex === page.snapIndex,
@@ -54,6 +54,7 @@ const pageProgressPercent = computed(() => {
 
 .sheet-timeline__item {
     position: relative;
+    flex: 1 1 0;
     min-width: 6px;
     height: 100%;
 }
@@ -88,7 +89,7 @@ const pageProgressPercent = computed(() => {
 
 .sheet-timeline__preview {
     position: absolute;
-    top: 28px;
+    bottom: 28px;
     left: 50%;
     width: 180px;
     height: 90px;
