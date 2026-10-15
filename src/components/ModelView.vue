@@ -12,6 +12,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
 import { pages } from '@/settings/timeline'
 import { useTimingStore } from '@/stores/timing'
+import { disposeObject3D } from '@/utils/disposeObject3D'
 
 const container = ref(null)
 const timing = useTimingStore()
@@ -25,6 +26,8 @@ let rafId
 let resizeObserver
 
 onMounted(() => {
+    let disposed = false
+    let originalPawnMaterial
     const scene = new THREE.Scene()
     scene.background = new THREE.Color('#ffffff')
 
@@ -32,6 +35,8 @@ onMounted(() => {
     const camera = new THREE.PerspectiveCamera(45, clientWidth / clientHeight, 0.1, 1000)
 
     renderer = new THREE.WebGLRenderer({ antialias: true })
+    renderer.shadowMap.enabled = true
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     renderer.setSize(clientWidth, clientHeight)
     container.value.appendChild(renderer.domElement)
@@ -51,10 +56,12 @@ onMounted(() => {
     controls.maxAzimuthAngle = 1.25
     controls.enablePan = true
 
-    scene.add(new THREE.HemisphereLight('#ffffff', '#444444', 2))
+    scene.add(new THREE.HemisphereLight('#ffffff', '#444444', 1.2))
 
     const light = new THREE.DirectionalLight('#ffffff', 2)
-    light.position.set(3, 5, 4)
+    light.castShadow = true
+    light.shadow.mapSize.set(2048, 2048)
+    light.shadow.normalBias = 2
     scene.add(light)
 
     const raycaster = new THREE.Raycaster()
@@ -64,37 +71,41 @@ onMounted(() => {
     let pawnMaterial = null
     const snapWorld = [] //world position per snap index
     const snapLocal = [] //same, in the pawn's parent space
-    const baseTarget = new THREE.Vector3()
     const panLimit = new THREE.Box3()
-    const pawnAim = new THREE.Vector3()
+    const previousPawnPosition = new THREE.Vector3()
+    const pawnMovement = new THREE.Vector3()
+    const zoomOffset = new THREE.Vector3()
+    const nextZoomOffset = new THREE.Vector3()
+    const zoomMovement = new THREE.Vector3()
     let modelRadius = 0
+    let previousDistance = 0
 
     function clampTarget() {
         if (!panLimit.isEmpty()) controls.target.clamp(panLimit.min, panLimit.max)
     }
 
-    //Zooming homes in on the pawn: the orbit target is a blend between the
-    //overview target and the pawn, driven by how close the camera actually is
-    //to the pawn — fully zoomed in, the camera looks straight at the pawn on
-    //the floor; zoomed out, the framing returns to the overview.
-    function onWheel() {
-        if (!pawn || !modelRadius) return
+    function updateZoomFocus() {
+        const distance = controls.getDistance()
+        const zoomed = Math.abs(distance - previousDistance) > 0.001
+        previousDistance = distance
 
-        pawn.getWorldPosition(pawnAim)
-        pawnAim.y += modelRadius * 0.02 //aim at the pawn's body, not its base
+        if (pawn && modelRadius && zoomed) {
+            const focus = THREE.MathUtils.smoothstep(
+                distance, controls.minDistance, modelRadius * 1.05
+            )
+            pawn.getWorldPosition(nextZoomOffset)
+            nextZoomOffset.y += modelRadius * 0.02
+            nextZoomOffset.sub(controls.target).add(zoomOffset).multiplyScalar(1 - focus)
+            zoomMovement.subVectors(nextZoomOffset, zoomOffset)
+            zoomOffset.copy(nextZoomOffset)
+            controls.target.add(zoomMovement)
+            camera.position.add(zoomMovement)
+        }
 
-        const distance = camera.position.distanceTo(pawnAim)
-        const focus = THREE.MathUtils.clamp(
-            (modelRadius * 1.15 - distance) / (modelRadius * (1.15 - 0.5)),
-            0,
-            1
-        )
-
-        controls.target.lerpVectors(baseTarget, pawnAim, focus)
         clampTarget()
     }
 
-    controls.addEventListener('change', clampTarget)
+    controls.addEventListener('change', updateZoomFocus)
 
     function setPointerFromEvent(event) {
         const rect = renderer.domElement.getBoundingClientRect()
@@ -111,7 +122,7 @@ onMounted(() => {
     }
 
     function setPawnGlow(glowing) {
-        if (pawnMaterial) pawnMaterial.emissiveIntensity = glowing ? 1.7 : 0
+        if (pawnMaterial) pawnMaterial.emissiveIntensity = glowing ? 1.7 : 0.8
     }
 
     function nearestSnapToRay() {
@@ -170,15 +181,21 @@ onMounted(() => {
     container.value.addEventListener('pointerleave', onPointerLeave)
     container.value.addEventListener('pointerup', onPointerUp)
     container.value.addEventListener('pointercancel', onPointerUp)
-    container.value.addEventListener('wheel', onWheel, { passive: false })
 
     new FBXLoader().load(
         modelUrl,
         (model) => {
+            if (disposed) {
+                disposeObject3D(model)
+                return
+            }
             //the FBX embeds its own lights; keep the scene lighting instead
             const lights = []
             model.traverse((object) => object.isLight && lights.push(object))
-            lights.forEach((object) => object.parent?.remove(object))
+            lights.forEach((object) => {
+                object.shadow?.dispose()
+                object.parent?.remove(object)
+            })
 
             const box = new THREE.Box3().setFromObject(model)
             const sphere = box.getBoundingSphere(new THREE.Sphere())
@@ -186,24 +203,45 @@ onMounted(() => {
 
             //fitting the model to the center of the scene
             model.position.sub(sphere.center)
-            model.position.y += sphere.radius * 0.2
             camera.position.set(sphere.radius * 0.1, sphere.radius * 0.12, sphere.radius * 1.05)
             camera.near = Math.max(sphere.radius / 100, 0.1)
             camera.far = sphere.radius * 10
             camera.updateProjectionMatrix()
-            baseTarget.set(sphere.radius * 0.1, 0, 0)
-            controls.target.copy(baseTarget)
+            controls.target.set(sphere.radius * 0.1, 0, 0)
             controls.minDistance = sphere.radius * 0.3
             controls.maxDistance = sphere.radius * 1.4
             //pan/zoom target may roam anywhere inside the recentred model bounds
             panLimit.copy(box).translate(sphere.center.clone().negate())
             controls.update()
 
+            light.position.set(sphere.radius * 1.5, sphere.radius * 0.65, sphere.radius * 0.5)
+            light.target.position.set(-sphere.radius / 3, box.min.y + model.position.y, 0)
+            scene.add(light.target)
+            Object.assign(light.shadow.camera, {
+                left: -sphere.radius, right: sphere.radius,
+                top: sphere.radius, bottom: -sphere.radius,
+                near: sphere.radius * 0.01, far: sphere.radius * 5,
+            })
+            light.shadow.camera.updateProjectionMatrix()
+
+            const ground = new THREE.Mesh(
+                new THREE.PlaneGeometry(sphere.radius * 6, sphere.radius * 6),
+                new THREE.ShadowMaterial({ opacity: 0.25 })
+            )
+            ground.rotation.x = -Math.PI / 2
+            ground.position.y = box.min.y + model.position.y - 1
+            ground.receiveShadow = true
+            scene.add(ground)
+
             scene.add(model)
             model.updateMatrixWorld(true)
 
             //collect the snap_000..snap_089 locators (one per music page)
             model.traverse((object) => {
+                if (object.isMesh) {
+                    object.castShadow = true
+                    object.receiveShadow = true
+                }
                 const match = object.name.match(/^snap_(\d+)$/)
                 if (match) snapWorld[Number(match[1])] = object.getWorldPosition(new THREE.Vector3())
 
@@ -213,16 +251,21 @@ onMounted(() => {
             if (pawn) {
                 pawnMaterial = pawn.material?.clone?.() ?? null
                 if (pawnMaterial) {
+                    originalPawnMaterial = pawn.material
                     pawn.material = pawnMaterial
                     pawnMaterial.color?.set('#fc783a')
                     pawnMaterial.emissive?.set('#fc783a')
-                    pawnMaterial.emissiveIntensity = 0
+                    pawnMaterial.emissiveIntensity = 0.8
                 }
 
                 snapWorld.forEach((world, i) => {
                     snapLocal[i] = pawn.parent.worldToLocal(world.clone())
                 })
                 pawn.position.copy(snapLocal[timing.currentPage.snapIndex] ?? pawn.position)
+                camera.position.set(1189.4983941573569, -595.4501678437462, 6233.059615806372)
+                controls.target.set(3824.999806229417, -1318.8512911126936, -0.000014662861511573338)
+                previousDistance = controls.getDistance()
+                controls.update()
             }
         },
         undefined,
@@ -238,7 +281,14 @@ onMounted(() => {
         if (pawn && snapLocal.length) {
             const index = dragIndex.value ?? timing.currentPage.snapIndex
             const target = snapLocal[index]
-            if (target) pawn.position.lerp(target, Math.min(1, dt * 10))
+            if (target) {
+                pawn.getWorldPosition(previousPawnPosition)
+                pawn.position.lerp(target, Math.min(1, dt * 10))
+                pawn.getWorldPosition(pawnMovement).sub(previousPawnPosition)
+                camera.position.add(pawnMovement)
+                controls.target.add(pawnMovement)
+                controls.update()
+            }
         }
 
         composer.render()
@@ -260,6 +310,7 @@ onMounted(() => {
     resizeObserver.observe(container.value)
 
     onBeforeUnmount(() => {
+        disposed = true
         cancelAnimationFrame(rafId)
         resizeObserver?.disconnect()
         container.value?.removeEventListener('pointerdown', onPointerDown, true)
@@ -267,8 +318,11 @@ onMounted(() => {
         container.value?.removeEventListener('pointerleave', onPointerLeave)
         container.value?.removeEventListener('pointerup', onPointerUp)
         container.value?.removeEventListener('pointercancel', onPointerUp)
-        container.value?.removeEventListener('wheel', onWheel)
         controls?.dispose()
+        composer.passes.forEach((pass) => pass.dispose())
+        composer.dispose()
+        disposeObject3D(scene, originalPawnMaterial ? [originalPawnMaterial] : [])
+        scene.clear()
         renderer?.dispose()
         renderer?.domElement.remove()
     })

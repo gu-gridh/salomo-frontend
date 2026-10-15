@@ -1,5 +1,5 @@
 <template>
-    <div class="main-layout">
+    <div class="main-layout" :class="{ 'main-layout--explore': activeTab === 'explore' }">
         <nav class="tabs">
             <button v-for="item in tabs" :key="item.value" class="tab"
                 :class="{ 'tab--active': activeTab === item.value }" type="button" @click="selectTab(item.value)">
@@ -56,15 +56,33 @@ function selectTab(value) {
 
 <style scoped>
 .main-layout {
+    position: relative;
     display: flex;
     flex-direction: column;
     height: 100vh;
 }
 
+@media (min-width: 1025px) {
+    .main-layout--explore > .tabs {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 20;
+        background: rgb(255 255 255 / 60%);
+        padding-bottom: 0;
+        overflow: hidden;
+        border-radius: 8px;
+    }
+
+    .main-layout--explore .tab--active {
+        background: rgb(255 166 0 / 75%);
+    }
+}
+
 .tabs {
     display: flex;
     flex: none;
-    padding: 0 0 10px 40px
+    padding: 0 0 10px 40px;
 }
 
 .tab-panel {

@@ -21,7 +21,10 @@ onMounted(() => {
             url: timing.currentPage.image,
         },
         showNavigationControl: false,
+        homeFillsViewer: false,
+        minZoomImageRatio: 1,
     })
+    viewer.addHandler('open', () => viewer.viewport.goHome(true))
 })
 
 //turn the displayed sheet-music page whenever the timeline reaches the next one

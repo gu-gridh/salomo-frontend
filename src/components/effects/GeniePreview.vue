@@ -20,7 +20,7 @@ const props = defineProps({
 const WIDTH = 200
 const HEIGHT = 100
 const DURATION = 300
-const TIMELINE_OFFSET = -19
+const TIMELINE_OFFSET = 19
 const NECK_WIDTH = 20
 const canvas = ref(null)
 const visible = ref(false)
@@ -57,9 +57,9 @@ function draw() {
 
     for (let y = 0; y < HEIGHT; y += 1) {
         const row = y / HEIGHT
-        const rowProgress = Math.max(0, Math.min(1, (progress - (1 - row) * 0.28) / 0.72))
+        const rowProgress = Math.max(0, Math.min(1, (progress - row * 0.28) / 0.72))
         const width = NECK_WIDTH + (WIDTH - NECK_WIDTH) * ease(rowProgress)
-        const destinationY = progress * y
+        const destinationY = HEIGHT - progress * (HEIGHT - y)
 
         context.drawImage(
             image,

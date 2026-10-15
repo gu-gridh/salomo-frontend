@@ -1,68 +1,40 @@
 <template>
-    <div ref="page" class="explore-page" :class="{ 'explore-page--resizing': resizing }">
-        <div class="top-content" :style="{ flexGrow: splitRatio }">
+    <div class="explore-page">
+        <div class="top-content">
             <section class="model-section">
                 <ModelView />
+                <div ref="desktopViewer" class="desktop-viewer"></div>
             </section>
 
             <AudioPlayer />
             <SheetTimeline />
         </div>
 
-        <div class="split-divider" title="Drag to resize · double-click to reset" @pointerdown="startResize"
-            @dblclick="resetSplit">
-            <span class="split-divider__grip"></span>
-        </div>
-
-        <div class="bottom-content" :style="{ flexGrow: 1 - splitRatio }">
-            <BottomInterface :show-reset="splitRatio !== DEFAULT_SPLIT" @reset="resetSplit" />
+        <div class="bottom-content">
+            <Teleport :to="desktopViewer || 'body'" :disabled="!isDesktop || !desktopViewer">
+                <BottomInterface />
+            </Teleport>
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import AudioPlayer from '@/components/AudioPlayer.vue'
 import ModelView from '@/components/ModelView.vue'
 import SheetTimeline from '@/components/SheetTimeline.vue'
 import BottomInterface from '@/views/BottomInterface.vue'
 
-const DEFAULT_SPLIT = 0.5
-const page = ref(null)
-const splitRatio = ref(DEFAULT_SPLIT)
-const resizing = ref(false)
+const desktopViewer = ref(null)
+const desktopQuery = window.matchMedia('(min-width: 1025px)')
+const isDesktop = ref(desktopQuery.matches)
 
-function resetSplit() {
-    splitRatio.value = DEFAULT_SPLIT
+function updateDesktop(event) {
+    isDesktop.value = event.matches
 }
 
-function startResize(event) {
-    const divider = event.currentTarget
-    resizing.value = true
-    divider.setPointerCapture(event.pointerId)
-
-    function onMove(moveEvent) {
-        const rect = page.value.getBoundingClientRect()
-        //pixel clamps: the top section must fit model + audio + timeline,
-        //the bottom section keeps enough room for the sheet music
-        const minTop = Math.min(380, rect.height / 2)
-        const maxTop = Math.max(rect.height - 240, minTop)
-        const top = Math.min(Math.max(moveEvent.clientY - rect.top, minTop), maxTop)
-
-        splitRatio.value = top / rect.height
-    }
-
-    function onUp() {
-        resizing.value = false
-        divider.removeEventListener('pointermove', onMove)
-        divider.removeEventListener('pointerup', onUp)
-        divider.removeEventListener('pointercancel', onUp)
-    }
-
-    divider.addEventListener('pointermove', onMove)
-    divider.addEventListener('pointerup', onUp)
-    divider.addEventListener('pointercancel', onUp)
-}
+onMounted(() => desktopQuery.addEventListener('change', updateDesktop))
+onBeforeUnmount(() => desktopQuery.removeEventListener('change', updateDesktop))
 </script>
 
 <style scoped>
@@ -71,11 +43,6 @@ function startResize(event) {
     flex-direction: column;
     height: 100%;
     overflow: hidden;
-}
-
-.explore-page--resizing {
-    cursor: row-resize;
-    user-select: none;
 }
 
 .top-content {
@@ -90,47 +57,43 @@ function startResize(event) {
 }
 
 .model-section {
+    display: flex;
     flex: 1;
     min-height: 0;
     margin-bottom: 24px;
 }
 
-/* the audio player and sheet timeline keep their natural height */
+.model-section > * {
+    flex: 1;
+    min-width: 0;
+}
+
+.desktop-viewer {
+    position: relative;
+}
+
 .top-content > :not(.model-section) {
     flex: none;
 }
 
-.split-divider {
-    position: relative;
-    z-index: 3;
-    display: flex;
-    flex: none;
-    align-items: center;
-    justify-content: center;
-    height: 18px;
-    margin-top: 6px;
-    cursor: row-resize;
-    touch-action: none;
-}
-
-.split-divider:hover .split-divider__grip,
-.explore-page--resizing .split-divider__grip {
-    background: #9f9e9e;
-}
-
-.split-divider__grip {
-    width: 64px;
-    height: 5px;
-    border-radius: 3px;
-    background: #d0cfcf;
-    transition: background-color 150ms ease;
-}
-
 .bottom-content {
-    position: relative;
-    z-index: 1;
-    flex: 1 1 0;
-    min-height: 0;
+    display: none;
+}
+
+@media (min-width: 1025px) {
+    .top-content {
+        display: grid;
+        grid-template-rows: minmax(0, 1fr) auto auto;
+        padding-bottom: 16px;
+    }
+
+    .model-section > * {
+        min-height: 0;
+    }
+
+    .model-section > .desktop-viewer {
+        flex: .65;
+    }
 }
 
 @media (max-width: 1024px) {
@@ -156,11 +119,13 @@ function startResize(event) {
         margin-bottom: 0;
     }
 
-    .split-divider {
+    .desktop-viewer {
         display: none;
     }
 
     .bottom-content {
+        display: block;
+        position: relative;
         flex: 1 0 55% !important;
         height: auto;
         min-height: 360px;
