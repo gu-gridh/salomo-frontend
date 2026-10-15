@@ -74,12 +74,38 @@ onMounted(() => {
     const panLimit = new THREE.Box3()
     const previousPawnPosition = new THREE.Vector3()
     const pawnMovement = new THREE.Vector3()
+    const zoomOffset = new THREE.Vector3()
+    const nextZoomOffset = new THREE.Vector3()
+    const zoomMovement = new THREE.Vector3()
+    let modelRadius = 0
+    let previousDistance = 0
 
     function clampTarget() {
         if (!panLimit.isEmpty()) controls.target.clamp(panLimit.min, panLimit.max)
     }
 
-    controls.addEventListener('change', clampTarget)
+    function updateZoomFocus() {
+        const distance = controls.getDistance()
+        const zoomed = Math.abs(distance - previousDistance) > 0.001
+        previousDistance = distance
+
+        if (pawn && modelRadius && zoomed) {
+            const focus = THREE.MathUtils.smoothstep(
+                distance, controls.minDistance, modelRadius * 1.05
+            )
+            pawn.getWorldPosition(nextZoomOffset)
+            nextZoomOffset.y += modelRadius * 0.02
+            nextZoomOffset.sub(controls.target).add(zoomOffset).multiplyScalar(1 - focus)
+            zoomMovement.subVectors(nextZoomOffset, zoomOffset)
+            zoomOffset.copy(nextZoomOffset)
+            controls.target.add(zoomMovement)
+            camera.position.add(zoomMovement)
+        }
+
+        clampTarget()
+    }
+
+    controls.addEventListener('change', updateZoomFocus)
 
     function setPointerFromEvent(event) {
         const rect = renderer.domElement.getBoundingClientRect()
@@ -173,6 +199,7 @@ onMounted(() => {
 
             const box = new THREE.Box3().setFromObject(model)
             const sphere = box.getBoundingSphere(new THREE.Sphere())
+            modelRadius = sphere.radius
 
             //fitting the model to the center of the scene
             model.position.sub(sphere.center)
@@ -237,6 +264,7 @@ onMounted(() => {
                 pawn.position.copy(snapLocal[timing.currentPage.snapIndex] ?? pawn.position)
                 camera.position.set(1189.4983941573569, -595.4501678437462, 6233.059615806372)
                 controls.target.set(3824.999806229417, -1318.8512911126936, -0.000014662861511573338)
+                previousDistance = controls.getDistance()
                 controls.update()
             }
         },
