@@ -1,10 +1,18 @@
 <template>
     <div class="explore-page">
         <div class="top-content">
-            <section class="model-section">
-                <ModelView />
-                <div ref="desktopViewer" class="desktop-viewer"></div>
-            </section>
+            <Splitter.Root class="model-section" :disabled="!isDesktop">
+                <Splitter.Panel class="model-panel" :default-size="60.6" :min-size="20">
+                    <ModelView />
+                </Splitter.Panel>
+                <Splitter.Handle v-if="isDesktop" class="panel-resizer"
+                    title="Drag or use arrow keys to resize panels">
+                    <span class="panel-resizer__grip"></span>
+                </Splitter.Handle>
+                <Splitter.Panel class="sheet-panel" :default-size="39.4" :min-size="20">
+                    <div ref="desktopViewer" class="desktop-viewer"></div>
+                </Splitter.Panel>
+            </Splitter.Root>
 
             <AudioPlayer />
             <SheetTimeline />
@@ -20,6 +28,7 @@
 
 <script setup>
 import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { Splitter } from '@vuetify/v0'
 import AudioPlayer from '@/components/AudioPlayer.vue'
 import ModelView from '@/components/ModelView.vue'
 import SheetTimeline from '@/components/SheetTimeline.vue'
@@ -63,13 +72,42 @@ onBeforeUnmount(() => desktopQuery.removeEventListener('change', updateDesktop))
     margin-bottom: 24px;
 }
 
-.model-section > * {
-    flex: 1;
-    min-width: 0;
+.model-panel,
+.sheet-panel {
+    flex-shrink: 1 !important;
+    overflow: hidden;
 }
 
 .desktop-viewer {
     position: relative;
+    height: 100%;
+}
+
+.model-section > .panel-resizer {
+    flex: 0 0 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: stretch;
+    border: 0;
+    background: #e0e0e0;
+    cursor: col-resize;
+    touch-action: none;
+    user-select: none;
+}
+
+.panel-resizer:hover,
+.panel-resizer:focus-visible,
+.panel-resizer[data-state="drag"] {
+    background-color: #ccc;
+}
+
+.panel-resizer__grip {
+    width: 3px;
+    height: 48px;
+    border-radius: 2px;
+    background: #666;
+    pointer-events: none;
 }
 
 .top-content > :not(.model-section) {
@@ -85,14 +123,6 @@ onBeforeUnmount(() => desktopQuery.removeEventListener('change', updateDesktop))
         display: grid;
         grid-template-rows: minmax(0, 1fr) auto auto;
         padding-bottom: 16px;
-    }
-
-    .model-section > * {
-        min-height: 0;
-    }
-
-    .model-section > .desktop-viewer {
-        flex: .65;
     }
 }
 
@@ -119,7 +149,12 @@ onBeforeUnmount(() => desktopQuery.removeEventListener('change', updateDesktop))
         margin-bottom: 0;
     }
 
-    .desktop-viewer {
+    .model-panel {
+        flex: 1 !important;
+    }
+
+    .sheet-panel,
+    .model-section > .panel-resizer {
         display: none;
     }
 
