@@ -166,6 +166,7 @@ export const sonatas = [
 let offset = 0
 let pageIndex = 0
 export const timeline = sonatas.map((sonata) => {
+    const pageStartIndex = pageIndex
     const pages = sonata.pages.map((page, i) => {
         const next = sonata.pages[i + 1]
 
@@ -182,7 +183,12 @@ export const timeline = sonatas.map((sonata) => {
             duration: (next ? next.time : sonata.duration) - page.time,
         }
     })
-    const entry = { ...sonata, offset, pages }
+    const entry = {
+        ...sonata,
+        offset,
+        pages,
+        pageStartIndex,
+    }
     offset += sonata.duration
 
     return entry

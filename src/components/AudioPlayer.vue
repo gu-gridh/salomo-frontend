@@ -5,7 +5,6 @@
         </button>
         <div class="audio-player__meta">
             <span class="audio-player__time">{{ formatTime(timing.time) }} / {{ formatTime(timing.totalDuration) }}</span>
-            <span class="audio-player__sonata">{{ timing.currentSonata.title }}</span>
         </div>
         <div ref="waveformEl" class="audio-player__waveform">
             <canvas ref="canvasEl" class="audio-player__canvas" @pointerdown="onPointerDown"
@@ -23,7 +22,7 @@ const timing = useTimingStore()
 const waveformEl = ref(null)
 const canvasEl = ref(null)
 
-const HEIGHT = 96
+const HEIGHT = 50
 const COLORS = {
     base: '#d8dce3',
     baseActive: '#b9c0cb',
@@ -320,13 +319,17 @@ function formatTime(seconds) {
 .audio-player {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
     width: 100%;
+    min-height: 50px;
+    padding-top: 5px;
+    padding-bottom: 5px;
 }
 
 .audio-player__button {
     width: 104px;
-    padding: 14px 22px 15px;
+    height: 40px;
+    padding: 0 18px;
     border: 0;
     border-radius: 8px;
     background: #000000;
@@ -358,22 +361,14 @@ function formatTime(seconds) {
 .audio-player__meta {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    width: 130px;
+    gap: 1px;
+    width: auto;
     flex: none;
 }
 
 .audio-player__time {
     color: #2a2f36;
     font-variant-numeric: tabular-nums;
-}
-
-.audio-player__sonata {
-    color: #8a919c;
-    font-size: 0.8em;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .audio-player__waveform {
@@ -397,7 +392,8 @@ function formatTime(seconds) {
 
     .audio-player__button {
         width: 88px;
-        padding: 12px 16px 13px;
+        height: 42px;
+        padding: 0 14px;
     }
 
     .audio-player__meta {

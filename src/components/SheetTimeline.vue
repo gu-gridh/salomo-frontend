@@ -1,10 +1,15 @@
 <template>
     <div class="sheet-timeline">
+        <div class="sheet-timeline__groups">
+            <div v-for="sonata in timeline" :key="sonata.id" class="sheet-timeline__group"
+                :style="{ left: `${sonataStartPercent(sonata)}%`, width: `${sonataWidthPercent(sonata)}%` }">
+                <span class="sheet-timeline__group-name">{{ sonata.title }}</span>
+                <span class="sheet-timeline__group-bracket"></span>
+            </div>
+        </div>
         <div class="sheet-timeline__track">
-            <div v-for="page in pages" :key="page.snapIndex" class="sheet-timeline__item" :class="{
-                'sheet-timeline__item--sonata-start': page.pageInSonata === 1 && page.snapIndex !== 0,
-            }" @mouseenter="hoveredPage = page.snapIndex"
-                @mouseleave="hoveredPage = null">
+            <div v-for="page in pages" :key="page.snapIndex" class="sheet-timeline__item"
+                @mouseenter="hoveredPage = page.snapIndex" @mouseleave="hoveredPage = null">
                 <button type="button" class="sheet-timeline__sheet" :class="{
                     'sheet-timeline__sheet--active': timing.currentPage.snapIndex === page.snapIndex,
                     'sheet-timeline__sheet--silent': page.silent,
@@ -22,11 +27,20 @@
 <script setup>
 import { computed, ref } from 'vue'
 import GeniePreview from '@/components/effects/GeniePreview.vue'
-import { pages } from '@/settings/timeline'
+import { pages, timeline } from '@/settings/timeline'
 import { useTimingStore } from '@/stores/timing'
 
 const timing = useTimingStore()
 const hoveredPage = ref(null)
+const totalPages = pages.length
+
+function sonataStartPercent(sonata) {
+    return (sonata.pageStartIndex / totalPages) * 100
+}
+
+function sonataWidthPercent(sonata) {
+    return (sonata.pages.length / totalPages) * 100
+}
 
 //playhead position within the currently active page (exact despite flex gaps)
 const pageProgressPercent = computed(() => {
@@ -39,8 +53,47 @@ const pageProgressPercent = computed(() => {
 
 <style scoped>
 .sheet-timeline {
+    --sheet-timeline-min-width: 640px;
+    position: relative;
     width: 100%;
-    padding-top: 10px;
+    padding-top: 0;
+}
+
+.sheet-timeline__groups {
+    position: relative;
+    height: 28px;
+    margin-bottom: 8px;
+}
+
+.sheet-timeline__group {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    min-width: 0;
+}
+
+.sheet-timeline__group-name {
+    display: block;
+    padding: 0 4px;
+    color: #6b7280;
+    font-size: 10px;
+    letter-spacing: 0.3px;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sheet-timeline__group-bracket {
+    position: absolute;
+    right: 2px;
+    bottom: 0;
+    left: 2px;
+    height: 12px;
+    border-top: 1px solid #9ca3af;
+    border-right: 1px solid #9ca3af;
+    border-left: 1px solid #9ca3af;
 }
 
 .sheet-timeline__track {
@@ -57,10 +110,6 @@ const pageProgressPercent = computed(() => {
     flex: 1 1 0;
     min-width: 6px;
     height: 100%;
-}
-
-.sheet-timeline__item--sonata-start {
-    margin-left: 8px;
 }
 
 .sheet-timeline__sheet {
@@ -117,8 +166,12 @@ const pageProgressPercent = computed(() => {
         padding-bottom: 8px;
     }
 
+    .sheet-timeline__groups {
+        min-width: var(--sheet-timeline-min-width);
+    }
+
     .sheet-timeline__track {
-        min-width: 640px;
+        min-width: var(--sheet-timeline-min-width);
     }
 
     .sheet-timeline__preview {
