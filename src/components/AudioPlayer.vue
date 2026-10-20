@@ -4,7 +4,8 @@
             {{ timing.isPlaying ? 'Pause' : 'Play' }}
         </button>
         <div class="audio-player__meta">
-            <span class="audio-player__time">{{ formatTime(timing.time) }} / {{ formatTime(timing.totalDuration) }}</span>
+            <span class="audio-player__time">{{ formatTime(timing.time) }} / {{ formatTime(timing.totalDuration)
+                }}</span>
         </div>
         <div ref="waveformEl" class="audio-player__waveform">
             <canvas ref="canvasEl" class="audio-player__canvas" @pointerdown="onPointerDown"
@@ -87,7 +88,7 @@ function syncEngine() {
     if (el) {
         const local = timing.time - activeSonata.offset
         if (Math.abs((el.currentTime || 0) - local) > 0.05) setAudioTime(el, local)
-        if (timing.isPlaying) el.play().catch(() => {})
+        if (timing.isPlaying) el.play().catch(() => { })
         else el.pause()
     }
 }
@@ -109,7 +110,7 @@ function advanceToNext() {
     const el = ensureAudio(next)
     if (el) {
         setAudioTime(el, 0)
-        el.play().catch(() => {})
+        el.play().catch(() => { })
     }
 }
 
@@ -359,10 +360,6 @@ function formatTime(seconds) {
 }
 
 .audio-player__meta {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    width: auto;
     flex: none;
 }
 
@@ -397,7 +394,6 @@ function formatTime(seconds) {
     }
 
     .audio-player__meta {
-        width: auto;
         min-width: 0;
     }
 

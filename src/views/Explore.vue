@@ -63,14 +63,12 @@ onBeforeUnmount(() => desktopQuery.removeEventListener('change', updateDesktop))
     min-height: 0;
     overflow: visible;
     padding: 0 32px;
-    gap: 0;
 }
 
 .model-section {
     display: flex;
     flex: 1;
     min-height: 0;
-    margin-bottom: 0;
 }
 
 .model-panel,
@@ -147,7 +145,6 @@ onBeforeUnmount(() => desktopQuery.removeEventListener('change', updateDesktop))
     .model-section {
         min-height: 240px;
         height: auto;
-        margin-bottom: 0;
     }
 
     .model-panel {

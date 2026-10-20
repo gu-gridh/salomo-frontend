@@ -1,8 +1,8 @@
 <template>
-    <div class="sheet-timeline">
+    <div class="sheet-timeline" :style="{ '--page-count': pages.length }">
         <div class="sheet-timeline__groups">
             <div v-for="sonata in timeline" :key="sonata.id" class="sheet-timeline__group"
-                :style="{ left: `${sonataStartPercent(sonata)}%`, width: `${sonataWidthPercent(sonata)}%` }">
+                :style="{ gridColumn: `span ${sonata.pages.length}` }">
                 <span class="sheet-timeline__group-name">{{ sonata.title }}</span>
                 <span class="sheet-timeline__group-bracket"></span>
             </div>
@@ -32,15 +32,6 @@ import { useTimingStore } from '@/stores/timing'
 
 const timing = useTimingStore()
 const hoveredPage = ref(null)
-const totalPages = pages.length
-
-function sonataStartPercent(sonata) {
-    return (sonata.pageStartIndex / totalPages) * 100
-}
-
-function sonataWidthPercent(sonata) {
-    return (sonata.pages.length / totalPages) * 100
-}
 
 //playhead position within the currently active page (exact despite flex gaps)
 const pageProgressPercent = computed(() => {
@@ -54,9 +45,14 @@ const pageProgressPercent = computed(() => {
 <style scoped>
 .sheet-timeline {
     --sheet-timeline-min-width: 640px;
-    position: relative;
     width: 100%;
-    padding-top: 0;
+}
+
+.sheet-timeline__groups,
+.sheet-timeline__track {
+    display: grid;
+    grid-template-columns: repeat(var(--page-count), minmax(6px, 1fr));
+    gap: 3px;
 }
 
 .sheet-timeline__groups {
@@ -66,9 +62,7 @@ const pageProgressPercent = computed(() => {
 }
 
 .sheet-timeline__group {
-    position: absolute;
-    top: 0;
-    bottom: 0;
+    position: relative;
     min-width: 0;
 }
 
@@ -98,8 +92,6 @@ const pageProgressPercent = computed(() => {
 
 .sheet-timeline__track {
     position: relative;
-    display: flex;
-    gap: 3px;
     width: 100%;
     height: 18px;
     overflow: visible;
@@ -107,7 +99,6 @@ const pageProgressPercent = computed(() => {
 
 .sheet-timeline__item {
     position: relative;
-    flex: 1 1 0;
     min-width: 6px;
     height: 100%;
 }
